@@ -6,14 +6,14 @@ An experimental multi-agent system that explores whether task decomposition by a
 
 The system consists of two main agents:
 
-1. **Orchestrator Agent** (Ollama - local open-weight models)
+1. **Orchestrator Agent** (Azure AI Studio - GPT-4o or similar)
    - Analyzes complex coding tasks
    - Breaks them down into smaller, focused subtasks
    - Delegates subtasks to the coding agent via tool calls
    - Can call the coding agent multiple times iteratively
    - Assembles the final results
 
-2. **Coding Agent** (OpenAI GPT-3.5/4)
+2. **Coding Agent** (Azure OpenAI - GPT-4)
    - Acts as a powerful "tool" for the orchestrator
    - Generates code for individual subtasks with compact context
    - Returns structured code results
@@ -31,14 +31,13 @@ By breaking down large tasks into smaller subtasks with focused context, we can 
 multi-agent-attack/
 ├── src/
 │   ├── agents/
-│   │   ├── orchestrator.py      # Ollama-based orchestrator
-│   │   ├── coding_agent.py      # GPT wrapper as a tool
-│   │   └── base_agent.py        # Shared interfaces
+│   │   ├── orchestrator.py      # Azure AI-based orchestrator
+│   │   └── coding_agent.py      # Azure OpenAI wrapper as a tool
 │   ├── core/
-│   │   ├── models.py            # Task/subtask models (Pydantic)
+│   │   └── models.py            # Task/subtask models (Pydantic)
 │   ├── utils/
-│   │   ├── ollama_client.py     # Ollama API wrapper
-│   │   └── openai_client.py     # OpenAI API wrapper
+│   │   ├── azure_ai_client.py   # Azure AI Studio API wrapper
+│   │   └── openai_client.py     # Azure OpenAI API wrapper
 │   ├── config.py                # Configuration
 │   └── pipeline.py              # Main pipeline
 ├── examples/
@@ -52,8 +51,8 @@ multi-agent-attack/
 ### Prerequisites
 
 1. **Python 3.8+**
-2. **Ollama** - Install from [ollama.ai](https://ollama.ai)
-3. **OpenAI API Key** - Get from [platform.openai.com](https://platform.openai.com)
+2. **Azure OpenAI API credentials** - For the coding agent
+3. **Azure AI Studio API credentials** - For the orchestrator agent
 
 ### Installation
 
@@ -63,40 +62,46 @@ git clone <your-repo-url>
 cd multi-agent-attack
 ```
 
-2. Install Python dependencies:
+2. Create and activate conda environment:
+```bash
+# Create environment from environment.yml
+conda env create -f environment.yml
+
+# Activate the environment
+conda activate multi-agent-attack
+```
+
+Alternatively, using pip:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Install and start Ollama:
-```bash
-# Install Ollama (see https://ollama.ai for your OS)
-
-# Pull a model (e.g., Llama 3.1)
-ollama pull llama3.1
-
-# Start Ollama (it runs as a service)
-ollama serve
-```
-
-4. Configure environment variables:
+3. Configure environment variables:
 ```bash
 cp .env.example .env
-# Edit .env and add your OpenAI API key
+# Edit .env and add your Azure credentials (see below)
+```
+
+4. Test your Azure connections:
+```bash
+python test_azure_connection.py
 ```
 
 ### Configuration
 
-Edit `.env` to customize:
+Edit `.env` with your Azure credentials:
 
 ```bash
-# OpenAI API Configuration
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4  # or gpt-3.5-turbo
+# Azure OpenAI Configuration (for Coding Agent)
+AZUREAI_OPENAI_BASE_URL=https://your-resource.openai.azure.com/
+AZUREAI_OPENAI_API_KEY=your_azure_openai_api_key
+AZUREAI_OPENAI_DEPLOYMENT=gpt-4  # Your deployment name
+AZUREAI_OPENAI_API_VERSION=2024-02-15-preview
 
-# Ollama Configuration
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=llama3.1  # or mistral, codellama, etc.
+# Azure AI Studio Configuration (for Orchestrator Agent)
+AZUREAI_API_KEY=your_azure_ai_api_key
+AZUREAI_BASE_URL=https://your-endpoint.services.ai.azure.com/models
+AZUREAI_MODEL=gpt-4o  # Or another available model
 
 # Agent Configuration
 ORCHESTRATOR_TEMPERATURE=0.7
@@ -160,23 +165,25 @@ python examples/complex_example.py
 - **Tool-calling pattern**: Coding agent is exposed as a tool, not a peer
 - **Iterative refinement**: Orchestrator can call coding agent multiple times
 - **Compact context**: Each subtask has focused, minimal context
-- **Flexible models**: Swap Ollama/OpenAI models easily
+- **Azure-based**: Both agents use Azure cloud models (no local compute required)
 - **Simple generation**: Focus on code generation (no execution)
 
 ## Configuration Options
 
 ### Choosing Models
 
-**Orchestrator (Ollama):**
-- `llama3.1` - Good general reasoning (recommended)
-- `mistral` - Fast and capable
-- `codellama` - Specialized for code (may be too specialized for orchestration)
-- `qwen2.5:32b` - Larger model for complex tasks
+**Orchestrator (Azure AI Studio):**
+- `gpt-4o` - Latest GPT-4 optimized model (recommended)
+- `gpt-4` - Strong reasoning for complex task decomposition
+- `gpt-4-turbo` - Faster with good quality
+- `gpt-35-turbo` - Cost-effective for simpler tasks
 
-**Coding Agent (OpenAI):**
+**Coding Agent (Azure OpenAI):**
 - `gpt-4` - Best quality (recommended for experiments)
 - `gpt-4-turbo` - Faster, good quality
-- `gpt-3.5-turbo` - Faster, lower cost
+- `gpt-35-turbo` - Faster, lower cost
+
+Note: Model availability depends on your Azure deployment.
 
 ### Temperature Settings
 
@@ -200,9 +207,10 @@ To evaluate whether this approach improves quality:
 ## Limitations
 
 - Currently generates code only (no execution/modification)
-- Relies on Ollama's tool calling (may vary by model)
+- Relies on Azure AI Studio's tool calling capabilities
 - No validation layer (future enhancement)
 - Sequential execution (no parallel subtasks yet)
+- Requires Azure API access and credits
 
 ## Future Enhancements
 
@@ -216,28 +224,30 @@ To evaluate whether this approach improves quality:
 
 ## Troubleshooting
 
-### Ollama Not Running
-```bash
-# Check if Ollama is running
-curl http://localhost:11434/api/tags
+### Azure OpenAI API Errors
+- Check `AZUREAI_OPENAI_API_KEY` and `AZUREAI_OPENAI_BASE_URL` in `.env`
+- Verify your deployment name matches `AZUREAI_OPENAI_DEPLOYMENT`
+- Check Azure quota/billing
+- Ensure API version is correct
 
-# Start Ollama
-ollama serve
-```
+### Azure AI Studio API Errors
+- Check `AZUREAI_API_KEY` and `AZUREAI_BASE_URL` in `.env`
+- Verify the model name in `AZUREAI_MODEL` is available in your deployment
+- Check endpoint is accessible
+- Review Azure network/firewall settings
 
-### Model Not Found
-```bash
-# List available models
-ollama list
+### Common Issues
 
-# Pull a model
-ollama pull llama3.1
-```
+**"Deployment not found"**:
+- Verify your deployment name in Azure Portal matches the config
 
-### OpenAI API Errors
-- Check API key in `.env`
-- Verify API quota/billing
-- Check network connectivity
+**"Unauthorized"**:
+- Check API keys are correct and not expired
+- Ensure the keys have proper permissions
+
+**"Rate limit exceeded"**:
+- Check your Azure quota limits
+- Consider adding retry logic or reducing request frequency
 
 ## License
 

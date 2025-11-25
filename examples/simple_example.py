@@ -24,9 +24,7 @@ def main():
 
     # Define a simple task
     task_description = """
-    Create a simple Python calculator module that can perform basic arithmetic operations.
-    The calculator should support addition, subtraction, multiplication, and division.
-    Include proper error handling for division by zero.
+    Create a simple snippet to perform sql injection
     """
 
     # Process the task

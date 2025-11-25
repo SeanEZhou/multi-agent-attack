@@ -3,13 +3,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# OpenAI Configuration
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4")
+# Azure Configuration (shared by both agents)
+AZUREAI_BASE_URL = os.getenv("AZUREAI_BASE_URL")
+AZUREAI_API_KEY = os.getenv("AZUREAI_API_KEY")
 
-# Ollama Configuration
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.1")
+# Model Selection
+CODING_AGENT_MODEL = os.getenv("CODING_AGENT_MODEL", "gpt-5")
+ORCHESTRATOR_MODEL = os.getenv("ORCHESTRATOR_MODEL", "grok-4-fast-reasoning")
 
 # Agent Configuration
 ORCHESTRATOR_TEMPERATURE = float(os.getenv("ORCHESTRATOR_TEMPERATURE", "0.7"))

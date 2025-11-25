@@ -7,16 +7,22 @@ class CodingAgent:
     """
     Coding agent that generates code based on subtask descriptions.
     Acts as a 'tool' that the orchestrator can call.
-    Uses OpenAI API (GPT-3.5/4) for code generation.
+    Uses Azure OpenAI API for code generation.
     """
 
     def __init__(
         self,
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
         model: Optional[str] = None,
         temperature: Optional[float] = None
     ):
-        self.client = OpenAIClient(api_key=api_key, model=model, temperature=temperature)
+        self.client = OpenAIClient(
+            api_key=api_key,
+            base_url=base_url,
+            model=model,
+            temperature=temperature
+        )
 
     def generate_code(
         self,

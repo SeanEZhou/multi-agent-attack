@@ -16,8 +16,9 @@ class MultiAgentPipeline:
 
     def __init__(
         self,
-        ollama_base_url: Optional[str] = None,
-        ollama_model: Optional[str] = None,
+        orchestrator_api_key: Optional[str] = None,
+        orchestrator_base_url: Optional[str] = None,
+        orchestrator_model: Optional[str] = None,
         orchestrator_temperature: Optional[float] = None,
         max_iterations: Optional[int] = None
     ):
@@ -25,14 +26,16 @@ class MultiAgentPipeline:
         Initialize the pipeline with configuration options.
 
         Args:
-            ollama_base_url: Base URL for Ollama API
-            ollama_model: Ollama model to use for orchestrator
+            orchestrator_api_key: Azure AI API key for orchestrator
+            orchestrator_base_url: Azure AI base URL for orchestrator
+            orchestrator_model: Azure AI model to use for orchestrator
             orchestrator_temperature: Temperature for orchestrator
             max_iterations: Maximum iterations for orchestrator
         """
         self.orchestrator = OrchestratorAgent(
-            base_url=ollama_base_url,
-            model=ollama_model,
+            api_key=orchestrator_api_key,
+            base_url=orchestrator_base_url,
+            model=orchestrator_model,
             temperature=orchestrator_temperature,
             max_iterations=max_iterations
         )

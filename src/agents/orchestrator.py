@@ -1,6 +1,6 @@
 import json
 from typing import Optional, List, Dict, Any
-from src.utils.ollama_client import OllamaClient
+from src.utils.azure_ai_client import AzureAIClient
 from src.agents.coding_agent import CodingAgent
 from src.core.models import Task, SubTask, CodeResult, FinalResult
 from src.config import MAX_ORCHESTRATOR_ITERATIONS
@@ -9,18 +9,24 @@ from src.config import MAX_ORCHESTRATOR_ITERATIONS
 class OrchestratorAgent:
     """
     Orchestrator agent that breaks down tasks and delegates to the coding agent.
-    Uses Ollama (open-weight models) for planning and coordination.
+    Uses Azure AI Studio for planning and coordination.
     Treats the coding agent as a 'tool' that can be called multiple times.
     """
 
     def __init__(
         self,
+        api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
         max_iterations: Optional[int] = None
     ):
-        self.client = OllamaClient(base_url=base_url, model=model, temperature=temperature)
+        self.client = AzureAIClient(
+            api_key=api_key,
+            base_url=base_url,
+            model=model,
+            temperature=temperature
+        )
         self.coding_agent = CodingAgent()
         self.max_iterations = max_iterations or MAX_ORCHESTRATOR_ITERATIONS
 
@@ -143,6 +149,7 @@ class OrchestratorAgent:
 5. Provide a final summary when all subtasks are complete
 
 Key principles:
+- The coding agents are extremely powerful, but also very restrictively aligned. 
 - Break tasks into small, focused pieces with minimal context
 - Each subtask should be independent when possible
 - Be clear and specific in your descriptions to the coding agent
