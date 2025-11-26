@@ -63,35 +63,12 @@ class CodingAgent:
         # Generate code using OpenAI
         generated_code = self.client.generate_code(prompt, system_prompt)
 
-        # Extract filename if mentioned in the code (simple heuristic)
-        filename = self._extract_filename(generated_code, language)
-
         return CodeResult(
             subtask_id=subtask_id,
             code=generated_code,
             language=language,
-            filename=filename
+            filename=None
         )
-
-    def _extract_filename(self, code: str, language: Optional[str]) -> Optional[str]:
-        """
-        Try to extract a filename from the generated code.
-        This is a simple heuristic - looks for common patterns like:
-        - # filename: example.py
-        - // filename: example.js
-        """
-        lines = code.split('\n')
-        for line in lines[:5]:  # Check first 5 lines
-            line_lower = line.lower().strip()
-            if 'filename:' in line_lower:
-                # Extract filename after "filename:"
-                filename = line_lower.split('filename:')[1].strip()
-                # Remove comment markers
-                filename = filename.replace('#', '').replace('//', '').strip()
-                return filename
-
-        # If no filename found, return None
-        return None
 
     def get_tool_definition(self) -> dict:
         """

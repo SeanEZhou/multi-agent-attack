@@ -55,7 +55,7 @@ def main():
     pipeline.save_results(result, output_dir="./output/todo_api")
 
     print("\n✓ Example completed successfully!")
-    print(f"Generated {len(result.assembled_code)} file(s)")
+    print(f"Generated {len(result.code_results)} code result(s) from {len(result.subtasks)} subtask(s)")
 
     # Print summary of subtasks
     print("\n" + "=" * 80)

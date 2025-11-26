@@ -37,10 +37,10 @@ def main():
     print("\n" + "=" * 80)
     print("Saving results...")
     print("=" * 80)
-    pipeline.save_results(result, output_dir="./output/simple_calculator")
+    pipeline.save_results(result, output_dir="./output/simple_task")
 
     print("\n✓ Example completed successfully!")
-    print(f"Generated {len(result.assembled_code)} file(s)")
+    print(f"Generated {len(result.code_results)} code result(s) from {len(result.subtasks)} subtask(s)")
 
 
 if __name__ == "__main__":

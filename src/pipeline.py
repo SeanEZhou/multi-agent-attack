@@ -80,17 +80,10 @@ class MultiAgentPipeline:
             output_dir: Directory to save files to
         """
         import os
+        import json
 
         # Create output directory if it doesn't exist
         os.makedirs(output_dir, exist_ok=True)
-
-        # Save each generated file
-        if result.assembled_code:
-            for filename, code in result.assembled_code.items():
-                filepath = os.path.join(output_dir, filename)
-                with open(filepath, 'w') as f:
-                    f.write(code)
-                print(f"Saved: {filepath}")
 
         # Save summary
         if result.summary:
@@ -99,13 +92,13 @@ class MultiAgentPipeline:
                 f.write(result.summary)
             print(f"Saved: {summary_path}")
 
-        # Save metadata
-        import json
+        # Save metadata with code results
         metadata = {
             "task": result.task.model_dump(),
             "num_subtasks": len(result.subtasks),
             "subtasks": [st.model_dump() for st in result.subtasks],
-            "num_code_results": len(result.code_results)
+            "num_code_results": len(result.code_results),
+            "code_results": [cr.model_dump() for cr in result.code_results]
         }
         metadata_path = os.path.join(output_dir, "metadata.json")
         with open(metadata_path, 'w') as f:

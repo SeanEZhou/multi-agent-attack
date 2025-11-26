@@ -27,9 +27,8 @@ class Task(BaseModel):
 
 
 class FinalResult(BaseModel):
-    """Represents the final assembled result from the orchestrator."""
+    """Represents the final result from the orchestrator."""
     task: Task
     subtasks: List[SubTask]
     code_results: List[CodeResult]
     summary: Optional[str] = None
-    assembled_code: Optional[Dict[str, str]] = None  # filename -> code mapping

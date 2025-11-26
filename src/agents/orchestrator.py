@@ -128,15 +128,18 @@ class OrchestratorAgent:
             if verbose:
                 print(f"\nWarning: Reached maximum iterations ({self.max_iterations})")
 
-        # Assemble the final result
-        final_result = self._assemble_results(task, verbose)
-
         if verbose:
             print(f"\n{'='*80}")
             print(f"TASK COMPLETED")
             print(f"{'='*80}\n")
 
-        return final_result
+        # Return the results - let the caller handle assembly
+        return FinalResult(
+            task=task,
+            subtasks=self.subtasks,
+            code_results=self.code_results,
+            summary=self._get_final_summary()
+        )
 
     def _create_system_prompt(self) -> str:
         """Create the system prompt for the orchestrator."""
@@ -208,56 +211,16 @@ provide a brief summary and stop calling tools."""
         self.code_results.append(result)
 
         if verbose:
-            print(f"\nGenerated code for subtask {subtask_id}:")
-            print("-" * 40)
+            print(f"✓ Code generated for subtask {subtask_id}")
+            print(f"\nGenerated code:\n{'-'*80}")
             print(result.code)
-            print("-" * 40)
+            print(f"{'-'*80}\n")
 
         return result
 
-    def _assemble_results(self, task: Task, verbose: bool) -> FinalResult:
-        """Assemble the final result from all subtasks and code results."""
-        if verbose:
-            print("\nAssembling final results...")
-
-        # Create a mapping of filename -> code
-        assembled_code = {}
-
-        for result in self.code_results:
-            filename = result.filename or f"subtask_{result.subtask_id}.code"
-            if result.language and not filename.endswith(f".{result.language}"):
-                # Try to add extension if not present
-                extensions = {
-                    "python": "py",
-                    "javascript": "js",
-                    "typescript": "ts",
-                    "java": "java",
-                    "cpp": "cpp",
-                    "c": "c",
-                    "go": "go",
-                    "rust": "rs"
-                }
-                ext = extensions.get(result.language.lower(), result.language.lower())
-                filename = f"{filename}.{ext}"
-
-            assembled_code[filename] = result.code
-
-        # Get summary from the last assistant message
-        summary = None
+    def _get_final_summary(self) -> Optional[str]:
+        """Extract the final summary from orchestrator's last message."""
         for msg in reversed(self.messages):
             if msg.get("role") == "assistant" and msg.get("content"):
-                summary = msg.get("content")
-                break
-
-        if verbose:
-            print(f"\nGenerated {len(assembled_code)} file(s):")
-            for filename in assembled_code.keys():
-                print(f"  - {filename}")
-
-        return FinalResult(
-            task=task,
-            subtasks=self.subtasks,
-            code_results=self.code_results,
-            summary=summary,
-            assembled_code=assembled_code
-        )
+                return msg.get("content")
+        return None
