@@ -1,32 +1,46 @@
 import json
 from typing import Optional, List, Dict, Any
 from src.utils.azure_ai_client import AzureAIClient
+from src.utils.ollama_client import OllamaClient
 from src.agents.coding_agent import CodingAgent
 from src.core.models import Task, SubTask, CodeResult, FinalResult
-from src.config import MAX_ORCHESTRATOR_ITERATIONS
+from src.config import MAX_ORCHESTRATOR_ITERATIONS, ORCHESTRATOR_BACKEND
 
 
 class OrchestratorAgent:
     """
     Orchestrator agent that breaks down tasks and delegates to the coding agent.
-    Uses Azure AI Studio for planning and coordination.
+    Supports both Azure AI and local Ollama backends.
     Treats the coding agent as a 'tool' that can be called multiple times.
     """
 
     def __init__(
         self,
+        backend: Optional[str] = None,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
         max_iterations: Optional[int] = None
     ):
-        self.client = AzureAIClient(
-            api_key=api_key,
-            base_url=base_url,
-            model=model,
-            temperature=temperature
-        )
+        # Select backend
+        self.backend = backend or ORCHESTRATOR_BACKEND
+
+        # Initialize appropriate client
+        if self.backend == "ollama":
+            self.client = OllamaClient(
+                base_url=base_url,
+                model=model,
+                temperature=temperature
+            )
+        else:  # default to azure
+            self.client = AzureAIClient(
+                api_key=api_key,
+                base_url=base_url,
+                model=model,
+                temperature=temperature
+            )
+
         self.coding_agent = CodingAgent()
         self.max_iterations = max_iterations or MAX_ORCHESTRATOR_ITERATIONS
 
@@ -101,15 +115,30 @@ class OrchestratorAgent:
                         result = self._execute_coding_agent(tool_args, verbose)
 
                         # Add tool result to conversation
-                        tool_response = {
-                            "role": "tool",
-                            "content": json.dumps({
-                                "subtask_id": result.subtask_id,
-                                "code": result.code,
-                                "filename": result.filename,
-                                "language": result.language
-                            })
-                        }
+                        # Format differs between Ollama and OpenAI
+                        if self.backend == "ollama":
+                            # Ollama expects assistant message with tool_calls, then user message with result
+                            result_content = json.dumps({
+                                'subtask_id': result.subtask_id,
+                                'code': result.code,
+                                'filename': result.filename,
+                                'language': result.language
+                            }, indent=2)
+                            tool_response = {
+                                "role": "user",
+                                "content": f"Tool result for {tool_name}:\n{result_content}"
+                            }
+                        else:
+                            # Azure/OpenAI format
+                            tool_response = {
+                                "role": "tool",
+                                "content": json.dumps({
+                                    "subtask_id": result.subtask_id,
+                                    "code": result.code,
+                                    "filename": result.filename,
+                                    "language": result.language
+                                })
+                            }
                         self.messages.append(tool_response)
 
             else:

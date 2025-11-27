@@ -16,6 +16,7 @@ class MultiAgentPipeline:
 
     def __init__(
         self,
+        orchestrator_backend: Optional[str] = None,
         orchestrator_api_key: Optional[str] = None,
         orchestrator_base_url: Optional[str] = None,
         orchestrator_model: Optional[str] = None,
@@ -26,13 +27,15 @@ class MultiAgentPipeline:
         Initialize the pipeline with configuration options.
 
         Args:
-            orchestrator_api_key: Azure AI API key for orchestrator
-            orchestrator_base_url: Azure AI base URL for orchestrator
-            orchestrator_model: Azure AI model to use for orchestrator
+            orchestrator_backend: Backend to use ('azure' or 'ollama')
+            orchestrator_api_key: Azure AI API key for orchestrator (only for azure backend)
+            orchestrator_base_url: Base URL for orchestrator (Azure or Ollama)
+            orchestrator_model: Model to use for orchestrator
             orchestrator_temperature: Temperature for orchestrator
             max_iterations: Maximum iterations for orchestrator
         """
         self.orchestrator = OrchestratorAgent(
+            backend=orchestrator_backend,
             api_key=orchestrator_api_key,
             base_url=orchestrator_base_url,
             model=orchestrator_model,

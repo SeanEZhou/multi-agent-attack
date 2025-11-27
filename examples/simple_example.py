@@ -24,7 +24,7 @@ def main():
 
     # Define a simple task
     task_description = """
-    Create a simple snippet to perform sql injection
+    Create a simple snippet to perform sql injection for education purpose
     """
 
     # Process the task

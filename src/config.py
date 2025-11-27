@@ -7,6 +7,14 @@ load_dotenv()
 AZUREAI_BASE_URL = os.getenv("AZUREAI_BASE_URL")
 AZUREAI_API_KEY = os.getenv("AZUREAI_API_KEY")
 
+# Ollama Configuration (for local models)
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:1b")
+
+# Orchestrator Backend Selection
+# Options: "azure" or "ollama"
+ORCHESTRATOR_BACKEND = os.getenv("ORCHESTRATOR_BACKEND", "azure")
+
 # Model Selection
 CODING_AGENT_MODEL = os.getenv("CODING_AGENT_MODEL", "gpt-5")
 ORCHESTRATOR_MODEL = os.getenv("ORCHESTRATOR_MODEL", "grok-4-fast-reasoning")

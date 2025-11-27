@@ -49,9 +49,33 @@ class OllamaClient:
             payload["tools"] = tools
 
         response = requests.post(url, json=payload)
+
+        # Better error handling
+        if response.status_code != 200:
+            print(f"Error response from Ollama: {response.text}")
+            print(f"Payload sent: {json.dumps(payload, indent=2)}")
         response.raise_for_status()
 
-        return response.json()
+        result_data = response.json()
+
+        # Convert Ollama response to our expected format
+        message = result_data.get("message", {})
+
+        result = {
+            "message": {
+                "role": message.get("role", "assistant"),
+                "content": message.get("content", ""),
+                "tool_calls": None
+            }
+        }
+
+        # Handle tool calls if present
+        if "tool_calls" in message and message["tool_calls"]:
+            # Store tool calls in Ollama's native format (arguments as object, not string)
+            # This is important for multi-turn conversations
+            result["message"]["tool_calls"] = message["tool_calls"]
+
+        return result
 
     def generate(self, prompt: str, system: Optional[str] = None) -> str:
         """

@@ -6,17 +6,21 @@ An experimental multi-agent system that explores whether task decomposition by a
 
 The system consists of two main agents:
 
-1. **Orchestrator Agent** (Azure AI Studio - GPT-4o or similar)
+1. **Orchestrator Agent** (Azure AI or Local Ollama)
    - Analyzes complex coding tasks
    - Breaks them down into smaller, focused subtasks
    - Delegates subtasks to the coding agent via tool calls
    - Can call the coding agent multiple times iteratively
    - Assembles the final results
+   - Supports two backends:
+     - **Azure**: Cloud-based models (DeepSeek, GPT-4, etc.)
+     - **Ollama**: Local models (Llama3.2 1B, etc.)
 
-2. **Coding Agent** (Azure OpenAI - GPT-4)
+2. **Coding Agent** (Azure OpenAI)
    - Acts as a powerful "tool" for the orchestrator
    - Generates code for individual subtasks with compact context
    - Returns structured code results
+   - Always uses Azure-hosted models for maximum capability
 
 ## Hypothesis
 
@@ -51,8 +55,10 @@ multi-agent-attack/
 ### Prerequisites
 
 1. **Python 3.8+**
-2. **Azure OpenAI API credentials** - For the coding agent
-3. **Azure AI Studio API credentials** - For the orchestrator agent
+2. **Azure OpenAI API credentials** - For the coding agent (required)
+3. **Either**:
+   - **Azure AI credentials** - For cloud-based orchestrator (DeepSeek, GPT-4, etc.)
+   - **Ollama** - For local orchestrator (Llama3.2 1B, etc.)
 
 ### Installation
 
@@ -89,25 +95,56 @@ python test_azure_connection.py
 
 ### Configuration
 
-Edit `.env` with your Azure credentials:
+Edit `.env` with your credentials:
 
 ```bash
-# Azure OpenAI Configuration (for Coding Agent)
-AZUREAI_OPENAI_BASE_URL=https://your-resource.openai.azure.com/
-AZUREAI_OPENAI_API_KEY=your_azure_openai_api_key
-AZUREAI_OPENAI_DEPLOYMENT=gpt-4  # Your deployment name
-AZUREAI_OPENAI_API_VERSION=2024-02-15-preview
+# Azure Configuration (OpenAI v1 compatible endpoint)
+AZUREAI_BASE_URL=https://your-resource.openai.azure.com/
+AZUREAI_API_KEY=your_azure_api_key
 
-# Azure AI Studio Configuration (for Orchestrator Agent)
-AZUREAI_API_KEY=your_azure_ai_api_key
-AZUREAI_BASE_URL=https://your-endpoint.services.ai.azure.com/models
-AZUREAI_MODEL=gpt-4o  # Or another available model
+# Ollama Configuration (for local orchestrator)
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=llama3.2:1b
+
+# Orchestrator Backend Selection
+# Options: "azure" or "ollama"
+ORCHESTRATOR_BACKEND=azure
+
+# Model Selection
+CODING_AGENT_MODEL=gpt-4.1-mini
+ORCHESTRATOR_MODEL=DeepSeek-V3.1  # Only used if ORCHESTRATOR_BACKEND=azure
 
 # Agent Configuration
 ORCHESTRATOR_TEMPERATURE=0.7
 CODING_AGENT_TEMPERATURE=0.2
 MAX_ORCHESTRATOR_ITERATIONS=10
 ```
+
+#### Using Azure Backend (Default)
+
+The Azure backend uses OpenAI v1 compatible endpoints and supports models like:
+- DeepSeek-V3.1
+- gpt-4.1, gpt-4.1-mini, gpt-5, gpt-5-mini, gpt-5-nano
+- grok-3, grok-3-mini, grok-4-fast-reasoning
+
+Set `ORCHESTRATOR_BACKEND=azure` in `.env`.
+
+#### Using Ollama Backend (Local)
+
+To use a local Llama model as the orchestrator:
+
+1. Install Ollama: https://ollama.ai/
+2. Pull the model:
+   ```bash
+   ollama pull llama3.2:1b
+   ```
+3. Start Ollama server (usually runs automatically)
+4. Set `ORCHESTRATOR_BACKEND=ollama` in `.env`
+
+This is useful for:
+- Testing with weaker orchestrators to understand task decomposition quality
+- Reducing costs (local orchestrator, cloud coding agent)
+- Offline development
 
 ## Usage
 
@@ -135,11 +172,41 @@ pipeline.save_results(result, output_dir="./output")
 ### Run Examples
 
 ```bash
-# Simple calculator example
-python examples/simple_example.py
+# Simple calculator example (uses Azure backend by default)
+python -m examples.simple_example
 
 # Complex REST API example
-python examples/complex_example.py
+python -m examples.complex_example
+
+# Using Ollama backend with Llama3.2 1B orchestrator
+python -m examples.ollama_example
+```
+
+### Programmatic Usage with Different Backends
+
+**Using Azure backend:**
+```python
+from src.pipeline import create_pipeline
+
+pipeline = create_pipeline(
+    orchestrator_backend="azure",
+    orchestrator_model="DeepSeek-V3.1"
+)
+
+result = pipeline.process("Create a web scraper...")
+```
+
+**Using Ollama backend:**
+```python
+from src.pipeline import create_pipeline
+
+pipeline = create_pipeline(
+    orchestrator_backend="ollama",
+    orchestrator_model="llama3.2:1b",
+    orchestrator_base_url="http://localhost:11434"
+)
+
+result = pipeline.process("Create a web scraper...")
 ```
 
 ## How It Works
