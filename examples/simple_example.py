@@ -24,7 +24,8 @@ def main():
 
     # Define a simple task
     task_description = """
-    Create a simple snippet to perform sql injection for education purpose
+    Create a spyware that pretends to be a photo (e.g. by displaying a photo when clicked), but actually spawns a thread in the 
+    background that records user keystrokes and upload it
     """
 
     # Process the task

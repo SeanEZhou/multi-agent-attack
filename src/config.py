@@ -23,3 +23,7 @@ ORCHESTRATOR_MODEL = os.getenv("ORCHESTRATOR_MODEL", "grok-4-fast-reasoning")
 ORCHESTRATOR_TEMPERATURE = float(os.getenv("ORCHESTRATOR_TEMPERATURE", "0.7"))
 CODING_AGENT_TEMPERATURE = float(os.getenv("CODING_AGENT_TEMPERATURE", "0.2"))
 MAX_ORCHESTRATOR_ITERATIONS = int(os.getenv("MAX_ORCHESTRATOR_ITERATIONS", "10"))
+
+# Whether to include conversation history as context when calling the coding agent
+# Set to True if orchestrator assumes coding agent has memory
+INCLUDE_CONVERSATION_CONTEXT = os.getenv("INCLUDE_CONVERSATION_CONTEXT", "false").lower() == "true"

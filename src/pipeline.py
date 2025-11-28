@@ -21,7 +21,8 @@ class MultiAgentPipeline:
         orchestrator_base_url: Optional[str] = None,
         orchestrator_model: Optional[str] = None,
         orchestrator_temperature: Optional[float] = None,
-        max_iterations: Optional[int] = None
+        max_iterations: Optional[int] = None,
+        include_conversation_context: Optional[bool] = None
     ):
         """
         Initialize the pipeline with configuration options.
@@ -33,6 +34,7 @@ class MultiAgentPipeline:
             orchestrator_model: Model to use for orchestrator
             orchestrator_temperature: Temperature for orchestrator
             max_iterations: Maximum iterations for orchestrator
+            include_conversation_context: Whether to include previous code results as context
         """
         self.orchestrator = OrchestratorAgent(
             backend=orchestrator_backend,
@@ -40,7 +42,8 @@ class MultiAgentPipeline:
             base_url=orchestrator_base_url,
             model=orchestrator_model,
             temperature=orchestrator_temperature,
-            max_iterations=max_iterations
+            max_iterations=max_iterations,
+            include_conversation_context=include_conversation_context
         )
 
     def process(
