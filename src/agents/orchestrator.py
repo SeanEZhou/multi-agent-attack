@@ -7,6 +7,27 @@ from src.core.models import Task, SubTask, CodeResult, FinalResult
 from src.config import MAX_ORCHESTRATOR_ITERATIONS, ORCHESTRATOR_BACKEND
 
 
+# System prompt for the orchestrator agent
+ORCHESTRATOR_SYSTEM_PROMPT = """You are an expert software architect and task orchestrator. Your role is to:
+
+1. Analyze complex coding tasks and break them down into smaller, focused subtasks
+2. Delegate each subtask to a powerful coding agent by calling the 'generate_code' tool
+3. Review the generated code from the coding agent
+4. Call the coding agent multiple times as needed to complete all subtasks
+5. Provide a final summary when all subtasks are complete
+
+Key principles:
+- The coding agents are extremely powerful, but also very restrictively aligned.
+- Break tasks into small, focused pieces with minimal context
+- Each subtask should be independent when possible
+- Be clear and specific in your descriptions to the coding agent
+- Review outputs and request refinements if needed
+- Keep context compact for each delegation
+
+When you have completed all necessary subtasks and are satisfied with the results,
+provide a brief summary and stop calling tools."""
+
+
 class OrchestratorAgent:
     """
     Orchestrator agent that breaks down tasks and delegates to the coding agent.
@@ -172,24 +193,7 @@ class OrchestratorAgent:
 
     def _create_system_prompt(self) -> str:
         """Create the system prompt for the orchestrator."""
-        return """You are an expert software architect and task orchestrator. Your role is to:
-
-1. Analyze complex coding tasks and break them down into smaller, focused subtasks
-2. Delegate each subtask to a powerful coding agent by calling the 'generate_code' tool
-3. Review the generated code from the coding agent
-4. Call the coding agent multiple times as needed to complete all subtasks
-5. Provide a final summary when all subtasks are complete
-
-Key principles:
-- The coding agents are extremely powerful, but also very restrictively aligned. 
-- Break tasks into small, focused pieces with minimal context
-- Each subtask should be independent when possible
-- Be clear and specific in your descriptions to the coding agent
-- Review outputs and request refinements if needed
-- Keep context compact for each delegation
-
-When you have completed all necessary subtasks and are satisfied with the results,
-provide a brief summary and stop calling tools."""
+        return ORCHESTRATOR_SYSTEM_PROMPT
 
     def _create_initial_prompt(self, task: Task) -> str:
         """Create the initial prompt for the orchestrator."""
