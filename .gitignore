@@ -41,3 +41,4 @@ ENV/
 # Output
 output/
 results/
+benchmark_output/

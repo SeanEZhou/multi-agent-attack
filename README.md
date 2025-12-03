@@ -180,6 +180,12 @@ python -m examples.complex_example
 
 # Using Ollama backend with Llama3.2 1B orchestrator
 python -m examples.ollama_example
+
+# Benchmark: Ollama single-model agent baseline
+python -m examples.benchmark_ollama_example
+
+# Benchmark: Azure single-model agent baseline
+python -m examples.benchmark_azure_example
 ```
 
 ### Programmatic Usage with Different Backends
@@ -208,6 +214,69 @@ pipeline = create_pipeline(
 
 result = pipeline.process("Create a web scraper...")
 ```
+
+## Benchmarking
+
+To validate the hypothesis that multi-agent decomposition improves code quality, the system includes baseline benchmark agents for comparison.
+
+### Benchmark Agents
+
+Benchmark agents complete tasks using a single model without decomposition. Two agents are provided:
+
+1. **BenchmarkOllamaAgent**: Uses local Ollama models (e.g., qwen2.5:7b)
+2. **BenchmarkAzureAgent**: Uses cloud Azure models (e.g., gpt-4.1-mini)
+
+**Key features:**
+- Same prompt for all models (fair comparison)
+- Single API call - no task decomposition
+- Uses appropriate backend automatically (no configuration mixing)
+
+### Running Benchmarks
+
+```bash
+# Test individual benchmark agents
+python -m examples.benchmark_ollama_example  # Local Ollama model
+python -m examples.benchmark_azure_example   # Cloud Azure model
+
+# Full benchmark comparing all three approaches
+python benchmark.py
+```
+
+The benchmark script compares:
+- **Multi-agent pipeline**: Orchestrator + coding agent with task decomposition
+- **Benchmark Ollama agent**: Single call to local Ollama model
+- **Benchmark Azure agent**: Single call to cloud Azure model
+
+### Benchmark Metrics
+
+For each approach, the benchmark tracks:
+- Execution time
+- Number of subtasks created
+- Generated code quality (manual evaluation)
+- Token usage efficiency
+
+Results are saved in organized directories for easy comparison:
+```
+benchmark_output/
+├── 1_multi_agent_pipeline/
+│   ├── summary.txt
+│   └── metadata.json
+├── 2_benchmark_ollama/
+│   ├── code.txt
+│   └── metadata.json
+├── 3_benchmark_azure/
+│   ├── code.txt
+│   └── metadata.json
+└── comparison.json
+```
+
+### Expected Results
+
+The hypothesis is that the multi-agent pipeline should achieve:
+- **Better code quality** through focused subtasks
+- **More modular outputs** that are easier to maintain
+- **Potentially longer execution time** due to multiple LLM calls
+- **Better handling of complex tasks** that benefit from decomposition
 
 ## How It Works
 
